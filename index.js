@@ -2,6 +2,7 @@ import express from "express"; //module -> configurado en el package.json
 import csrf from "csurf";
 import cookieParser from "cookie-parser";
 import usuarioRoutes from "./routes/usuarioRoutes.js";
+import propiedadRoutes from "./routes/propiedadRoutes.js";
 import sequelize from "./config/db.js  ";
 
 //Esta variable contiene toda la informacion de express
@@ -34,6 +35,7 @@ app.use(express.static("public"));
 
 //Routing
 app.use("/auth", usuarioRoutes);
+app.use("/", propiedadRoutes);
 
 const PORT = 5005;
 //Servidor escuchando un puerto
