@@ -1,5 +1,5 @@
-import Categoria from "../models/Categoria.js";
-import Precio from "../models/Precio.js";
+import { validationResult } from "express-validator";
+import { Precio, Categoria, Propiedad } from "../models/index.js"; //contiene todas las relaciones
 
 const admin = (req, res) => {
   res.render("propiedades/admin", {
@@ -19,9 +19,66 @@ const crear = async (req, res) => {
   res.render("propiedades/crear", {
     pagina: "Crear Propiedad",
     barra: true,
+    csrfToken: req.csrfToken(),
     categorias,
     precios,
+    datos: {},
   });
 };
 
-export { admin, crear };
+const guardar = async (req, res) => {
+  //validacion
+  let resultado = validationResult(req);
+
+  //Si hay errores
+  if (!resultado.isEmpty()) {
+    //Consultar modelo de rpecio y categoria
+    const [categorias, precios] = await Promise.all([
+      Categoria.findAll(),
+      Precio.findAll(),
+    ]);
+
+    return res.render("propiedades/crear", {
+      pagina: "Crear Propiedad",
+      barra: true,
+      categorias,
+      precios,
+      csrfToken: req.csrfToken(),
+      errores: resultado.array(),
+      datos: req.body,
+    });
+  }
+
+  //Crear registro
+  const {
+    titulo,
+    descripcion,
+    habitaciones,
+    estacionamiento,
+    wc,
+    calle,
+    lat,
+    lng,
+    precio: precioId,
+    categoria: categoriaId,
+  } = req.body;
+
+  try {
+    const propiedad = await Propiedad.create({
+      titulo,
+      descripcion,
+      habitaciones,
+      estacionamiento,
+      wc,
+      calle,
+      lat,
+      lng,
+      precioId,
+      categoriaId,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { admin, crear, guardar };
